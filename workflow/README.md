@@ -1,10 +1,11 @@
-Create a "Workflow Template"
+# Create a "Workflow Template"
 
 Use the numbered Job Templates to create a Workflow Template using the Workflow Visualizer.
 
 
 The following are the extra vars for the Workflow template.
 
+```yaml
 ---
 resource_group_name: "ansible_test"
 region: "eastus"
@@ -20,3 +21,4 @@ win_public_ip_name: "win_demo_ip"
 win_nic_name: "win_demo_nic"
 win_admin_user: "azureuser"
 win_admin_password: "AnsibleTest@123"
+```
