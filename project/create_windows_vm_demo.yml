@@ -5,42 +5,45 @@
   tasks:
     - name: Create resource group
       azure_rm_resourcegroup:
-        name: "{{ resource_group_name }}"
+        name: "{{ resource_group_name | default('demo') }}"
         location: "{{ region }}"
 
     - name: Create virtual network
       azure_rm_virtualnetwork:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ vnet_name }}"
         address_prefixes: "{{ vnet_cidr }}"
 
     - name: Add subnet
       azure_rm_subnet:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ subnet_name }}"
         address_prefix: "{{ subnet_cidr }}"
         virtual_network: "{{ vnet_name }}"
 
     - name: Create public IP address
       azure_rm_publicipaddress:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         allocation_method: Static
         name: "{{ win_public_ip_name }}"
       register: output_ip_address
+      when: survey_public_ip
 
     - name: Dump public IP for VM which will be created
       debug:
         msg: "The public IP is {{ output_ip_address.state.ip_address }}"
+      when: survey_public_ip
 
     - name: Set Stat for Ansible Controller
       set_stats:
-        data: 
+        data:
           azure_vm_public_ip: "{{ output_ip_address.state.ip_address }}"
         per_host: false
+      when: survey_public_ip
 
     - name: Create Network Security Group that allows SSH and RDP
       azure_rm_securitygroup:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ network_sec_group_name }}"
         rules:
           - name: SSH
@@ -58,7 +61,7 @@
 
     - name: Create virtual network interface card
       azure_rm_networkinterface:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ win_nic_name }}"
         virtual_network: "{{ vnet_name }}"
         subnet: "{{ subnet_name }}"
@@ -67,8 +70,8 @@
 
     - name: Create VM
       azure_rm_virtualmachine:
-        resource_group: "{{ resource_group_name }}"
-        name: "{{ win_vm_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
+        name: "{{ win_vm_name | default('demo_win_vm') }}"
         os_type: Windows
         vm_size: "{{ win_vm_size }}"
         admin_username: "{{ win_admin_user }}"
@@ -79,3 +82,6 @@
           publisher: MicrosoftWindowsServer
           sku: "{{ win_vm_sku }}"
           version: latest
+        tags:
+          deployment: ansible
+          purpose: demo
